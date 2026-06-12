@@ -2,8 +2,8 @@
 // ☁️ CONFIGURACIÓN DE TU BASE DE DATOS EN LA NUBE (SUPABASE)
 // ==========================================================================
 // Apenas termine de crearse el proyecto, copiá tus credenciales y pegalas acá:
-const SUPABASE_URL = "https://TU_PROYECTO_ID.supabase.co";
-const SUPABASE_KEY = "TU_SUPER_ANON_KEY_GIGANTE";
+const SUPABASE_URL = "https://srxyihjzralnwmbghlbr.supabase.co";
+const SUPABASE_KEY = "sb_publishable_DdxolSiFK1CKXxlOh1aUwg_b2qppEin";
 
 const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
