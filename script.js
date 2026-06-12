@@ -1,11 +1,10 @@
 // ==========================================================================
 // ☁️ CONFIGURACIÓN DE TU BASE DE DATOS EN LA NUBE (SUPABASE)
 // ==========================================================================
-// Remplazá estos dos strings con las credenciales que te da tu panel de Supabase:
+// Apenas termine de crearse el proyecto, copiá tus credenciales y pegalas acá:
 const SUPABASE_URL = "https://TU_PROYECTO_ID.supabase.co";
 const SUPABASE_KEY = "TU_SUPER_ANON_KEY_GIGANTE";
 
-// Inicializamos el cliente global de Supabase en la app
 const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 let formatoActual  = "post-vertical";
@@ -14,7 +13,7 @@ let posicionActual = "abajo-derecha";
 // ── Init ────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
 
-    // Grillas de toggles (Respetado idéntico)
+    // Grillas de toggles vinculadas a tu HTML actual
     bindToggle('formato', (val) => {
         formatoActual = val;
         const lienzo = document.getElementById('lienzo-objetivo');
@@ -87,14 +86,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Swipe táctil
     setupSwipe();
 
-    // 🔥 Auto-login adaptado para validar estado de créditos real de forma asíncrona
+    // Auto-login asíncrono desde la nube
     const tokenGuardado = localStorage.getItem('saas_token');
     if (tokenGuardado) {
         verificarSesionActiva(tokenGuardado);
     }
 });
 
-// Función auxiliar para el auto-login asíncrono seguro
 async function verificarSesionActiva(token) {
     if (!supabase) return;
     try {
@@ -105,7 +103,7 @@ async function verificarSesionActiva(token) {
             localStorage.removeItem('saas_token');
         }
     } catch (err) {
-        console.error("Error de conexión inicial:", err);
+        console.error("Error de sesión:", err);
     }
 }
 
@@ -161,7 +159,7 @@ function setupSwipe() {
     addSwipe(document.getElementById('panel-preview'), () => {}, () => mobileTab('config'));
 }
 
-// ── Logo styles ──────────────────────────────────────────────────
+// ── 🔥 CORREGIDO: ALTURA EN AUTO PARA EVITAR DEFORMACIONES ────────
 function aplicarEstilosLogo() {
     const logo   = document.getElementById('placa-logo');
     const rangeOp = document.getElementById('range-opacidad');
@@ -173,7 +171,7 @@ function aplicarEstilosLogo() {
     const sz = parseInt(rangeSz.value);
     if (posicionActual === 'centro-gigante') {
         logo.style.width  = `${sz * 3.5}px`;
-        logo.style.height = 'auto';
+        logo.style.height = 'auto'; // 👈 Auto previene que se aplaste en el centro
     } else {
         logo.style.width     = `${sz * 2.5}px`;
         logo.style.height    = 'auto';
@@ -181,7 +179,7 @@ function aplicarEstilosLogo() {
     }
 }
 
-// ── Auth CON CONEXIÓN A INTERNET (SUPABASE) ────────────────────────
+// ── Auth con Supabase ─────────────────────────────────────────────
 async function validarToken() {
     const input    = document.getElementById('input-token');
     const errorEl  = document.getElementById('error-token');
@@ -194,15 +192,14 @@ async function validarToken() {
     }
 
     if (!supabase) {
-        if (errorEl) errorEl.textContent = 'Error crítico de base de datos.';
+        if (errorEl) errorEl.textContent = 'Error de inicialización de base de datos.';
         return;
     }
 
-    if (errorEl) errorEl.textContent = 'Validando en la nube... ⏳';
+    if (errorEl) errorEl.textContent = 'Validando credenciales... ⏳';
     if (btnEntrar) btnEntrar.disabled = true;
 
     try {
-        // Consultamos la tabla "clientes" filtrando por la columna "token"
         const { data, error } = await supabase.from('clientes').select('*').eq('token', token).maybeSingle();
 
         if (error) throw error;
@@ -216,7 +213,7 @@ async function validarToken() {
         }
     } catch (err) {
         console.error(err);
-        if (errorEl) errorEl.textContent = 'Error de red al conectar con internet.';
+        if (errorEl) errorEl.textContent = 'Error de red al conectar con la nube.';
     } finally {
         if (btnEntrar) btnEntrar.disabled = false;
     }
@@ -235,6 +232,10 @@ function cargarApp(token, creditosDesdeNube) {
     aplicarEstilosLogo();
 }
 
+function updateContadorLocal(nuevoSaldo) {
+    actualizarContadorGrafico(nuevoSaldo);
+}
+
 function actualizarContadorGrafico(cantidadCreditos) {
     const numEl   = document.getElementById('contador-creditos');
     const btnDl   = document.getElementById('btn-descargar');
@@ -245,7 +246,7 @@ function actualizarContadorGrafico(cantidadCreditos) {
     if (txtDl && cantidadCreditos <= 0) txtDl.textContent = 'Sin créditos';
 }
 
-// ── Descarga CON DESCUENTO DESDE LA NUBE ───────────────────────────
+// ── Descarga con Sincronización Directa ───────────────────────────
 async function procesarDescarga() {
     const token  = localStorage.getItem('saas_token');
     const lienzo = document.getElementById('lienzo-objetivo');
@@ -254,7 +255,6 @@ async function procesarDescarga() {
 
     if (!lienzo || !supabase) return;
 
-    // 1. Validamos saldo real volviendo a preguntar en la nube (Evita fraudes de inspección)
     try {
         const { data, error } = await supabase.from('clientes').select('creditos').eq('token', token).maybeSingle();
         if (error || !data) throw new Error("No se pudo verificar el saldo.");
@@ -268,7 +268,6 @@ async function procesarDescarga() {
         if (txtDl) txtDl.textContent = 'Procesando…';
         if (btnDl) btnDl.disabled = true;
 
-        // 2. Render de la imagen
         const canvas = await html2canvas(lienzo, {
             useCORS: true,
             allowTaint: true,
@@ -277,13 +276,11 @@ async function procesarDescarga() {
             logging: false
         });
 
-        // 3. Descontamos el crédito directamente en la tabla de Supabase
         const nuevoSaldo = credActuales - 1;
         const { error: updateError } = await supabase.from('clientes').update({ creditos: nuevoSaldo }).eq('token', token);
 
         if (updateError) throw updateError;
 
-        // 4. Descarga del archivo si impactó el descuento en internet
         const link = document.createElement('a');
         link.download = `watermark-pro-${formatoActual}.png`;
         link.href = canvas.toDataURL('image/png', 1.0);
@@ -299,7 +296,7 @@ async function procesarDescarga() {
 
     } catch (err) {
         console.error(err);
-        alert('Error al sincronizar con la nube. Intenta de nuevo.');
+        alert('Error de sincronización con la nube. Intentá de nuevo.');
         if (txtDl) txtDl.textContent = 'Guardar imagen';
         if (btnDl) btnDl.disabled = false;
     }
