@@ -1,17 +1,22 @@
 // ==========================================================================
 // ☁️ CONFIGURACIÓN DE TU BASE DE DATOS EN LA NUBE (SUPABASE)
 // ==========================================================================
-// Apenas termine de crearse el proyecto, copiá tus credenciales y pegalas acá:
 const SUPABASE_URL = "https://srxyihjzralnwmbghlbr.supabase.co";
 const SUPABASE_KEY = "sb_publishable_DdxolSiFK1CKXxlOh1aUwg_b2qppEin";
 
-const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+// 🔥 MODIFICACIÓN BLINDADA: Inicialización dinámica segura para evitar bloqueos de red
+let supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 let formatoActual  = "post-vertical";
 let posicionActual = "abajo-derecha";
 
 // ── Init ────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+
+    // Si por velocidad de carga de red la librería tardó un pelín, la inicializamos acá
+    if (!supabase && window.supabase) {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
 
     // Grillas de toggles vinculadas a tu HTML actual
     bindToggle('formato', (val) => {
@@ -191,6 +196,11 @@ async function validarToken() {
         return;
     }
 
+    // Intento de re-conexión de último minuto si el objeto falló al arrancar
+    if (!supabase && window.supabase) {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+
     if (!supabase) {
         if (errorEl) errorEl.textContent = 'Error de inicialización de base de datos.';
         return;
@@ -307,6 +317,7 @@ function cerrarSesion() {
     location.reload();
 }
 
+// Función auxiliar para truncar strings largos
 function truncar(nombre) {
     return nombre.length > 18 ? nombre.slice(0, 15) + '…' : nombre;
 }
