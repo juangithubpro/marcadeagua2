@@ -2,7 +2,7 @@
 // ☁️ CONFIGURACIÓN DE TU BASE DE DATOS EN LA NUBE (SUPABASE)
 // ==========================================================================
 const SUPABASE_URL = "https://srxyihjzralnwmbghlbr.supabase.co";
-const SUPABASE_KEY = "sb_publishable_DdxolSiFK1CKXxlOh1aUwg_b2qppEin";
+const SUPABASE_KEY = "sb_publishable_PY6yma5ijXz0noLH9BsHTg_egVoxiSC";
 
 // 🔥 MODIFICACIÓN BLINDADA: Inicialización dinámica segura para evitar bloqueos de red
 let supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
