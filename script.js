@@ -1,7 +1,7 @@
 // ==========================================================================
 // ☁️ CONFIGURACIÓN DE TU BASE DE DATOS EN LA NUBE (SUPABASE)
 // ==========================================================================
-const SUPABASE_URL = "https://srxyihjzralnwmbghlbr.supabase.co/rest/v1/";
+const SUPABASE_URL = "https://srxyihjzralnwmbghlbr.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyeHlpaGp6cmFsbndtYmdobGJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjE0MTAsImV4cCI6MjA5NjgzNzQxMH0.--LIuF4b32TXI-gEpr0zKflA79stdRLQWYCEAkWnIrg";
 
 // 🔥 MODIFICACIÓN BLINDADA: Inicialización dinámica segura para evitar bloqueos de red
