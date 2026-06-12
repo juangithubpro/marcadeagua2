@@ -5,7 +5,7 @@ const SUPABASE_URL = "https://srxyihjzralnwmbghlbr.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyeHlpaGp6cmFsbndtYmdobGJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjE0MTAsImV4cCI6MjA5NjgzNzQxMH0.--LIuF4b32TXI-gEpr0zKflA79stdRLQWYCEAkWnIrg";
 
 // 🔥 MODIFICACIÓN BLINDADA: Inicialización dinámica segura para evitar bloqueos de red
-let supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+let supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 let formatoActual  = "post-vertical";
 let posicionActual = "abajo-derecha";
@@ -14,8 +14,8 @@ let posicionActual = "abajo-derecha";
 document.addEventListener('DOMContentLoaded', () => {
 
     // Si por velocidad de carga de red la librería tardó un pelín, la inicializamos acá
-    if (!supabase && window.supabase) {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    if (!supabaseClient && window.supabase) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     }
 
     // Grillas de toggles vinculadas a tu HTML actual
@@ -99,9 +99,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function verificarSesionActiva(token) {
-    if (!supabase) return;
+    if (!supabaseClient) return;
     try {
-        const { data, error } = await supabase.from('clientes').select('*').eq('token', token).maybeSingle();
+        const { data, error } = await supabaseClient.from('clientes').select('*').eq('token', token).maybeSingle();
         if (data && !error) {
             cargarApp(token, data.creditos);
         } else {
@@ -197,11 +197,11 @@ async function validarToken() {
     }
 
     // Intento de re-conexión de último minuto si el objeto falló al arrancar
-    if (!supabase && window.supabase) {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    if (!supabaseClient && window.supabase) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     }
 
-    if (!supabase) {
+    if (!supabaseClient) {
         if (errorEl) errorEl.textContent = 'Error de inicialización de base de datos.';
         return;
     }
@@ -210,7 +210,7 @@ async function validarToken() {
     if (btnEntrar) btnEntrar.disabled = true;
 
     try {
-        const { data, error } = await supabase.from('clientes').select('*').eq('token', token).maybeSingle();
+        const { data, error } = await supabaseClient.from('clientes').select('*').eq('token', token).maybeSingle();
 
         if (error) throw error;
 
@@ -263,10 +263,10 @@ async function procesarDescarga() {
     const btnDl  = document.getElementById('btn-descargar');
     const txtDl  = document.getElementById('btn-dl-text');
 
-    if (!lienzo || !supabase) return;
+    if (!lienzo || !supabaseClient) return;
 
     try {
-        const { data, error } = await supabase.from('clientes').select('creditos').eq('token', token).maybeSingle();
+        const { data, error } = await supabaseClient.from('clientes').select('creditos').eq('token', token).maybeSingle();
         if (error || !data) throw new Error("No se pudo verificar el saldo.");
         
         let credActuales = data.creditos;
@@ -287,7 +287,7 @@ async function procesarDescarga() {
         });
 
         const nuevoSaldo = credActuales - 1;
-        const { error: updateError } = await supabase.from('clientes').update({ creditos: nuevoSaldo }).eq('token', token);
+        const { error: updateError } = await supabaseClient.from('clientes').update({ creditos: nuevoSaldo }).eq('token', token);
 
         if (updateError) throw updateError;
 
